@@ -328,12 +328,14 @@ int List<T>::deduplicate()
 		return 0;
 	}
 	int oldSize = _size;
-	for (int i = 1; i != _size;)
+	ListNode<T>* tmp = _header;
+	int i = 0;
+	while((tmp = tmp->succ) != _trailer)
 	{
-		ListNode<T>* tmp = find((*this)[i]->data, i, (*this)[i]);
-		if (tmp)
+		ListNode<T>* finder = find(tmp->data, i, tmp);
+		if (finder)
 		{
-			remove(tmp);
+			remove(finder);
 		}
 		else
 		{
@@ -346,7 +348,23 @@ int List<T>::deduplicate()
 template<typename T>
 int List<T>::uniquify()
 {
+	if (_size < 2)
+	{
+		return 0;
+	}
+	int oldSize = _size;
+	ListNode<T>* p = begin();
+	ListNode<T>* q = begin()->succ;
 
+	for (; q != _trailer; p = q, q = q->succ)
+	{
+		if (p->data == q->data)
+		{
+			remove(q);
+			q = p;
+		}
+	}
+	return oldSize - _size;
 }
 
 template<typename T>
