@@ -180,3 +180,62 @@ binarySearch的十分好懂，无非就是将向量分割，对中间值进行�
 不过在上述的binarySearch过程中，使e >= _elem[mid]时lo = mid + 1，这就使得，找到的那个元素要么是在向量中小于待查元素的最大值，要么是等于该值（如果等于该值的元素有多个，则返回的秩为等于最后那个相等元素的秩）。如果是比向量中最小元素还有小的则，则返回秩-1；
 
 这种返回结果的好处是，如果想要在有序向量插入一个元素且继续保持向量有序性，只需要通过查找要插入的元素返回的秩来进行插入即可。
+
+
+
+## 边界问题
+
+关于各种排序查找的边界问题始终是使我头痛的一个问题。例如mergeSort中mid的确认，二分查找中lo和hi的确认。
+
+因此我在这里想要理清楚这些东西
+
+```c++
+int BinSearch(SeqList *R，int n,KeyType K)
+{
+    //在有序表R[0..n-1]中进行二分查找，成功时返回结点的位置，失败时返回-1
+    int low=0,high=n-1,mid；     //置当前查找区间上、下界的初值
+    while(low<=high)
+    {
+        if(R[low].key==K)
+            return low;
+        if(R[high].key==k)
+            return high;          //当前查找区间R[low..high]非空
+        mid=low+(high-low)/2;
+            /*使用(low+high)/2会有整数溢出的问题
+            （问题会出现在当low+high的结果大于表达式结果类型所能表示的最大值时，
+                这样，产生溢出后再/2是不会产生正确结果的，而low+((high-low)/2)
+                不存在这个问题*/
+        if(R[mid].key==K)
+          return mid;             //查找成功返回
+        if(R[mid].key<K)
+          low=mid+1;              //继续在R[mid+1..high]中查找
+        else
+          high=mid-1;             //继续在R[low..mid-1]中查找
+    }
+    if(low>high)
+        return -1;//当low>high时表示所查找区间内没有结果，查找失败
+}
+```
+
+该代码来自百度的普通binarySearch，这个程序十分复杂，但是不妨我们使用他来进行边界问题分析。
+
+在程序的开头它使用了high = n - 1， 也就是说排序会从第一个元素的秩到最后一个元素的秩之间进行。因此他的循环条件就必须得是low<=high，因此他的low和high就必须使用low=mid+1和high=mid-1这样笨拙的避免在找不到值的情况下而出现死循环的方法。
+
+下面再看另外一种简单的二分查找
+
+```c++
+template<typename T>
+int Vector<T>::binarySearch(T& A, const T& e, Rank lo, Rank hi)
+{
+	while (lo + 1 < hi)
+	{
+		Rank mid = (lo + hi) >> 1;
+		(e < A[mid]) ? hi = mid : lo = mid;
+	}
+	return (e == A[lo]) ? lo : -1;
+}
+```
+
+
+
+那么再来看我们的binarySearch，他是对[lo, hi）秩之间的对应元素进行排序，他相比较上面方法更加简单。首hi<=size是我们要知道的。既然如此，lo + 1< hi我们也就理解了，如果hi - 1 == lo也就说明二分已经到头了，不能再分了，然后退出再比较e是否等于A[lo]。
