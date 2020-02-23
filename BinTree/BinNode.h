@@ -182,7 +182,7 @@ void travIn_I2(BinNode<T>* x, VST& visit)
 		else if (!S.empty())
 		{
 			x = S.pop();
-			visit(x);
+			visit(x->data);
 			x = x->rChild;
 		}
 		else break;
@@ -201,11 +201,11 @@ void travPost_I1(BinNode<T>* x, VST& visit)
 			gotoHLVFL(S);
 		}
 		x = S.pop();
-		visit(x);
+		visit(x->data);
 	}
 }
 
-template<typename T, typename VST>
+template<typename T>
 void gotoHLVFL(Stack<BinNode<T>*>& S)
 {
 	while (BinNode<T>* x = S.top())
