@@ -5,10 +5,13 @@
 
 template<typename Tv> struct Vertex
 {
-	Tv data;		//用于描述点（实例：城市名称
+	Tv data;		//用于描述点（实例：城市名称)
+	VStatus status;
 	explicit Vertex(const Tv& _data) :
-		data(_data)
+		data(_data),
+		status(UNDISCOVERED)
 	{
+		
 	}
 };
 
@@ -27,23 +30,26 @@ template<typename Tv, typename Te>
 class GraphMatrix : public Graph<Tv, Te>
 {
 public:
-	using Graph<Tv, Te>::e;
-	using Graph<Tv, Te>::n;
+	//添加typename避免n或者e为Graph中定义的类型。比如using e = int;
+	typename Graph<Tv, Te>::e;
+	typename Graph<Tv, Te>::n;
+
 	GraphMatrix() {
 		n = e = 0;
 	}
+
 	~GraphMatrix() {
 		for (int i = 0; i != n; ++i)
 		{
 			for (int j = 0; j != n; ++j)
 			{
-				delete Edge[i][j];
+				delete E[i][j];
 			}
 		}
 	}
 
 	/*点操作*/
-	int insertVertex(const Tv& data) override {
+	virtual int insertVertex(const Tv& data) override {
 		/*添加顶点*/
 		V.push_back(Vertex<Tv>(data));
 		++n;
@@ -81,17 +87,54 @@ public:
 	}
 
 	/*边操作*/
-	virtual int insertEdge(const Te& edgeData, int w, int i, int j) override {
+	virtual void insertEdge(const Te& edgeData, int w, int i, int j) override {
 		E[i][j] = new Edge<Te>(edgeData, w);
+		++e;
 	}
 
 	virtual Te removeEdge(int i, int j) override {
-		Te data = E[i][j].data;
+		Te data = E[i][j]->data;
 		delete E[i][j];
 		E[i][j] = nullptr;
+		--e;
 		return data;
 	}
 
+	virtual Te edgeData(int i, int j) override {
+		Te data = E[i][j]->data;
+		return data;
+	}
+
+	/*遍历操作*/
+	void dfs(int i)
+	{
+		judgeVertexsBoundary(i);
+		int j = i;
+		do
+		{
+			if (V[j].status == UNDISCOVERED)
+			{
+				DFS(j);
+			}
+			j = ++j % n;
+		} while (j != i);
+	}
+
+	virtual void DFS(int i) override {
+		V[i].status = DISCOVERED;
+		for (int j = 0; j < n; ++j)
+		{
+			if (i != j && E[i][j] != nullptr && V[j].status == UNDISCOVERED)
+			{
+				DFS(j);
+			}
+		}
+		std::cout << V[i].data << std::endl;
+		V[i].status = VISITED;
+	}
+
+	virtual void BFS() override {
+	}
 
 private:
 	void judgeVertexsBoundary(int i) {
