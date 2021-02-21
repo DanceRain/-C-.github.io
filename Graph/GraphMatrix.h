@@ -34,7 +34,8 @@ public:
 	typename Graph<Tv, Te>::e;
 	typename Graph<Tv, Te>::n;
 
-	GraphMatrix() {
+	GraphMatrix()
+	{
 		n = e = 0;
 	}
 
@@ -65,7 +66,6 @@ public:
 	}
 
 	virtual Tv removeVertex(int i) override {
-		judgeVertexsBoundary(i);
 		/*É¾³ý¶¥µã*/
 		Tv delData = V[i].data;
 		V.erase(V.cbegin() + i);
@@ -82,8 +82,11 @@ public:
 	}
 
 	virtual Tv vertexData(int i) override {
-		judgeVertexsBoundary(i);
 		return V[i].data;
+	}
+	
+	virtual VStatus& vertexStatus(int i) override {
+		return V[i].status;
 	}
 
 	/*±ß²Ù×÷*/
@@ -105,45 +108,15 @@ public:
 		return data;
 	}
 
-	/*±éÀú²Ù×÷*/
-	void dfs(int i)
-	{
-		judgeVertexsBoundary(i);
-		int j = i;
-		do
+	virtual bool isEdgeExist(int i, int j) override {
+		if (Graph<Tv, Te>::isOutOfBoundary(i) || Graph<Tv, Te>::isOutOfBoundary(j) || E[i][j] == nullptr)
 		{
-			if (V[j].status == UNDISCOVERED)
-			{
-				DFS(j);
-			}
-			j = ++j % n;
-		} while (j != i);
-	}
-
-	virtual void DFS(int i) override {
-		V[i].status = DISCOVERED;
-		for (int j = 0; j < n; ++j)
-		{
-			if (i != j && E[i][j] != nullptr && V[j].status == UNDISCOVERED)
-			{
-				DFS(j);
-			}
+			return false;
 		}
-		std::cout << V[i].data << std::endl;
-		V[i].status = VISITED;
-	}
-
-	virtual void BFS() override {
+		return true;
 	}
 
 private:
-	void judgeVertexsBoundary(int i) {
-		if (i < 0 || i >= V.size())
-		{
-			std::cout << "overstep the boundary" << std::endl;
-		}
-	}
-
 	std::vector<Vertex<Tv>> V;
 	std::vector<std::vector<Edge<Te>*>> E;
 };
